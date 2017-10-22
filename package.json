@@ -1,0 +1,26 @@
+{
+  "name": "github-stats",
+  "version": "0.1.0",
+  "description": "This script can be used to count total number of stars and forks for a user.",
+  "main": "github-stats.js",
+  "engines": {
+    "node": "8.x.x"
+  },
+  "bin": {
+    "github-stats": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shekhargulati/github-stats.git"
+  },
+  "keywords": [],
+  "author": "Shekhar Gulati",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shekhargulati/github-stats/issues"
+  },
+  "homepage": "https://github.com/shekhargulati/github-stats#readme",
+  "dependencies": {
+    "commander": "^2.11.0"
+  }
+}

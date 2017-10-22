@@ -1,24 +1,26 @@
-var https = require('https'),
-    user = process.argv[2],
-    opts = parseOpts(process.argv.slice(3))
+'use strict';
 
-request('/users/' + user, function (res) {
-    if (!res.public_repos) {
-        console.log(res.message)
-        return
-    }
-    var pages = Math.ceil(res.public_repos / 100),
-        i = pages,
-        repos = []
-    while (i--) {
-        request('/users/' + user + '/repos?per_page=100&page=' + (i + 1), check)
-    }
-    function check(res) {
-        repos = repos.concat(res)
-        pages--
-        if (!pages) output(repos)
-    }
-})
+const https = require('https');
+
+function generateStatsForUser(user, opts) {
+    request('/users/' + user, function (res) {
+        if (!res.public_repos) {
+            console.log(res.message);
+            return;
+        }
+        var pages = Math.ceil(res.public_repos / 100),
+            i = pages,
+            repos = []
+        while (i--) {
+            request('/users/' + user + '/repos?per_page=100&page=' + (i + 1), check);
+        }
+        function check(res) {
+            repos = repos.concat(res);
+            pages--;
+            if (!pages) output(repos, user, opts);
+        }
+    });
+}
 
 function request(url, cb) {
     https.request({
@@ -38,7 +40,7 @@ function request(url, cb) {
     }).end()
 }
 
-function output(repos) {
+function output(repos, user, opts) {
     var totalStars = 0,
         longest = 0,
         totalForks = 0,
@@ -46,7 +48,7 @@ function output(repos) {
             .filter(function (r) {
                 totalStars += r.stargazers_count
                 totalForks += r.forks_count;
-                if (r.stargazers_count >= opts.thresh) {
+                if (r.stargazers_count >= opts.threshold) {
                     if (r.name.length > longest) {
                         longest = r.name.length
                     }
@@ -58,7 +60,7 @@ function output(repos) {
             })
 
     if (list.length > opts.limit) {
-        list = list.slice(0, opts.limit)
+        list = list.slice(0, opts.limit);
     }
 
     console.log('\n' + user + ' has ' + repos.length + ' public repositories as of ' + new Date().toLocaleString())
@@ -75,18 +77,4 @@ function output(repos) {
 
 }
 
-function parseOpts(args) {
-    var opts = {
-        thresh: 1,
-        limit: Infinity
-    }
-    args.forEach(function (a, i) {
-        var next = args[i + 1]
-        if (a === '-t') {
-            opts.thresh = parseInt(next, 10) || 1
-        } else if (a === '-l') {
-            opts.limit = parseInt(next, 10) || Infinity
-        }
-    })
-    return opts
-}
+module.exports.generateStatsForUser = generateStatsForUser;
