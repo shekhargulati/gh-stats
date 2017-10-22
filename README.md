@@ -2,6 +2,10 @@
 
 This node command-line utility can be used to count total number of stars and forks for a user. For example, to count total number of stars and forks for shekhargulati (i.e. me) you can run the following command.
 
+```
+$ npm install -g gh-stats
+```
+
 ```javascript
 $ gh-stats shekhargulati
 ```
