@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const gh = require('./github-stats')
+const gh = require('./gh-stats')
 
 program
     .version('0.1.0')
