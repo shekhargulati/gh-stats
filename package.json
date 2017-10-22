@@ -1,6 +1,6 @@
 {
   "name": "gh-stats",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "This script can be used to count total number of stars and forks for a user.",
   "main": "github-stats.js",
   "engines": {
