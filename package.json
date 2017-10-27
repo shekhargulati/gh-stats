@@ -1,7 +1,7 @@
 {
   "name": "gh-stats",
   "version": "1.1.0",
-  "description": "This script can be used to count total number of stars and forks for a user.",
+  "description": "This script find stars and forks for a user. You can use it to compare yourself against others as well.",
   "main": "gh-stats.js",
   "engines": {
     "node": "8.x.x"
@@ -19,8 +19,11 @@
   "bugs": {
     "url": "https://github.com/shekhargulati/gh-stats/issues"
   },
-  "homepage": "https://github.com/shekhargulati/gh-stats#readme",
+  "homepage": "https://github.com/shekhargulati/gh-stats",
   "dependencies": {
-    "commander": "^2.11.0"
+    "cli-table": "^0.3.1",
+    "commander": "^2.11.0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
   }
 }

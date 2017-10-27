@@ -1,20 +1,30 @@
 # Github Stats Utility
 
-This node command-line utility can be used to count total number of stars and forks for a user. For example, to count total number of stars and forks for shekhargulati (i.e. me) you can run the following command.
+This node command-line utility can be used to count total number of stars and forks for a user. You can also use it to compare your stats with other Github users or organization.
+
+Before you can use it, you have to install it.
 
 ```
 $ npm install -g gh-stats
 ```
 
-```javascript
-$ gh-stats shekhargulati
-```
+You can then run the following command to compare yourself with other Git users or organization.
 
 ```
-shekhargulati has 232 public repositories as of 9/5/2017, 3:57:42 PM
-Total Stars: 13090
-Total Forks: 2496
+$  gh-stats shekhargulati google facebook
+...................................................
+┌───────────────┬────────────────────┬─────────────┬─────────────┐
+│ User          │ Total Repositories │ Total Stars │ Total Forks │
+├───────────────┼────────────────────┼─────────────┼─────────────┤
+│ shekhargulati │ 235                │ 13341       │ 2586        │
+├───────────────┼────────────────────┼─────────────┼─────────────┤
+│ google        │ 1087               │ 609359      │ 116984      │
+├───────────────┼────────────────────┼─────────────┼─────────────┤
+│ facebook      │ 173                │ 552892      │ 90634       │
 ```
 
+The CLI also supports Github personal access tokens in case you face Github API limit issue.
 
-This is a fork of [starcounter.js gist](https://gist.github.com/yyx990803/7745157) created by [yyx990803](https://github.com/yyx990803). I modified it to support forks as well.
+```
+$ gh-stats shekhargulati -t 8ca1annjnjnknkjnkf807faf30bb2ddferfera11
+```

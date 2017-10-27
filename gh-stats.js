@@ -1,80 +1,95 @@
-'use strict';
+const request = require('request-promise');
+const Table = require('cli-table');
+const process = require('process');
 
-const https = require('https');
+let github = {
+    user: null,
+    token: null,
+    getUser: function (user) {
+        const r = {
+            "method": "GET",
+            "uri": "https://api.github.com/users/" + github.user,
+            "json": true,
+            "headers": {
+                "User-Agent": "gh-stats"
+            }
+        };
+        if (github.token) {
+            r.headers['Authorization'] = "Bearer " + github.token;
+        }
+        return request(r);
+    },
+    getUserReposUrl: function (user) {
+        return user.repos_url;
+    },
+    isPublic: function (repo) {
+        return !repo.private;
+    },
+    getUserRepos: function (uri, repos) {
+        const r = {
+            "method": "GET",
+            "uri": uri,
+            "json": true,
+            "resolveWithFullResponse": true,
+            "headers": {
+                "User-Agent": "gh-stats"
+            }
+        };
+        if (github.token) {
+            r.headers['Authorization'] = "Bearer " + github.token;
+        }
+        return request(r).then(function (response) {
+            if (!repos) {
+                repos = [];
+            }
+            repos = repos.concat(response.body);
+            process.stdout.write(".");
 
-function generateStatsForUser(user, opts) {
-    request('/users/' + user, function (res) {
-        if (!res.public_repos) {
-            console.log(res.message);
-            return;
-        }
-        var pages = Math.ceil(res.public_repos / 100),
-            i = pages,
-            repos = []
-        while (i--) {
-            request('/users/' + user + '/repos?per_page=100&page=' + (i + 1), check);
-        }
-        function check(res) {
-            repos = repos.concat(res);
-            pages--;
-            if (!pages) output(repos, user, opts);
-        }
-    });
+            if (response.headers.link.split(",").filter(function (link) { return link.match(/rel="next"/) }).length > 0) {
+                const next = new RegExp(/<(.*)>/).exec(response.headers.link.split(",").filter(function (link) { return link.match(/rel="next"/) })[0])[1];
+                return github.getUserRepos(next, repos);
+            }
+            return repos;
+        });
+    }
 }
 
-function request(url, cb) {
-    https.request({
-        hostname: 'api.github.com',
-        path: url,
-        headers: { 'User-Agent': 'GitHub Stats' }
-    }, function (res) {
-        var body = ''
-        res
-            .on('data', function (buf) {
-                process.stdout.write(".");
-                body += buf.toString()
-            })
-            .on('end', function () {
-                cb(JSON.parse(body))
-            })
-    }).end()
-}
-
-function output(repos, user, opts) {
-    var totalStars = 0,
-        longest = 0,
-        totalForks = 0,
-        list = repos
-            .filter(function (r) {
+function getData(user, token) {
+    github.token = token;
+    github.user = user
+    return github.getUser()
+        .then(github.getUserReposUrl)
+        .then(github.getUserRepos)
+        .filter(github.isPublic)
+        .then(function (allPublicRepos) {
+            const publicRepoCount = allPublicRepos.length;
+            let totalStars = 0;
+            let totalForks = 0;
+            allPublicRepos.forEach(function (r) {
                 totalStars += r.stargazers_count
                 totalForks += r.forks_count;
-                if (r.stargazers_count >= opts.threshold) {
-                    if (r.name.length > longest) {
-                        longest = r.name.length
-                    }
-                    return true;
-                }
-            })
-            .sort(function (a, b) {
-                return b.stargazers_count - a.stargazers_count
-            })
-
-    if (list.length > opts.limit) {
-        list = list.slice(0, opts.limit);
-    }
-
-    console.log('\n' + user + ' has ' + repos.length + ' public repositories as of ' + new Date().toLocaleString())
-    console.log('Total Stars: ' + totalStars)
-    console.log('Total Forks: ' + totalForks + '\n')
-    console.log(list.map(function (r) {
-        return r.name +
-            new Array(longest - r.name.length + 4).join(' ') +
-            r.stargazers_count
-            + ' stars '
-            + r.forks_count
-            + ' forks '
-    }).join('\n'))
-
+            });
+            return [
+                user,
+                publicRepoCount,
+                totalStars,
+                totalForks
+            ]
+        });
 }
 
-module.exports.generateStatsForUser = generateStatsForUser;
+async function generateStats(users, token) {
+    try {
+        const results = await Promise.all(users.map(user => getData(user, token)));
+        const table = new Table({
+            head: ['User', 'Total Repositories', 'Total Stars', 'Total Forks']
+        });
+        results.forEach(r => table.push(r));
+        console.log();
+        console.log(table.toString());
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+module.exports.generateStats = generateStats;
