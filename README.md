@@ -26,5 +26,5 @@ $  gh-stats shekhargulati google facebook
 The CLI also supports Github personal access tokens in case you face Github API limit issue.
 
 ```
-$ gh-stats shekhargulati -t 8ca1annjnjnknkjnkf807faf30bb2ddferfera11
+$ gh-stats shekhargulati -t <token>
 ```
